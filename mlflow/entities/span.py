@@ -568,7 +568,7 @@ class LiveSpan(Span):
         from mlflow.tracing.attachments import Attachment
 
         if isinstance(value, Attachment):
-            ref = value.ref(self._trace_id)
+            ref = value.ref(self.trace_id)
             self._attachments[value.id] = value
             return ref
         if isinstance(value, dict):
