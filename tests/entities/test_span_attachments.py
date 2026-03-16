@@ -77,6 +77,32 @@ def test_non_dict_input_without_attachment():
     assert span.inputs == "plain string"
 
 
+def test_tuple_extraction():
+    span = _make_live_span()
+    att = Attachment(content_type="image/png", content_bytes=b"img")
+    span.set_inputs({"images": (att, "text")})
+
+    assert att.id in span._attachments
+    inputs = span.inputs
+    assert isinstance(inputs["images"], list)
+    assert isinstance(inputs["images"][0], str)
+    assert inputs["images"][0].startswith("mlflow-attachment://")
+    assert inputs["images"][1] == "text"
+
+
+def test_set_inputs_twice_accumulates_attachments():
+    span = _make_live_span()
+    att1 = Attachment(content_type="image/png", content_bytes=b"first")
+    att2 = Attachment(content_type="image/jpeg", content_bytes=b"second")
+
+    span.set_inputs({"img": att1})
+    span.set_outputs({"img": att2})
+
+    assert att1.id in span._attachments
+    assert att2.id in span._attachments
+    assert len(span._attachments) == 2
+
+
 def test_to_immutable_span_propagates_attachments():
     span = _make_live_span()
     att = Attachment(content_type="image/png", content_bytes=b"img")

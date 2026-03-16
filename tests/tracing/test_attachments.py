@@ -84,3 +84,15 @@ def test_parse_ref_invalid():
     assert Attachment.parse_ref("https://example.com") is None
     assert Attachment.parse_ref("not-a-uri") is None
     assert Attachment.parse_ref("mlflow-attachment://") is None
+
+
+def test_from_file_nonexistent_path():
+    with pytest.raises(FileNotFoundError):
+        Attachment.from_file("/nonexistent/path/image.png")
+
+
+def test_ref_roundtrips_special_characters_in_content_type():
+    att = Attachment(content_type="application/vnd.custom+json", content_bytes=b"data")
+    ref = att.ref("tr-123")
+    parsed = Attachment.parse_ref(ref)
+    assert parsed["content_type"] == "application/vnd.custom+json"

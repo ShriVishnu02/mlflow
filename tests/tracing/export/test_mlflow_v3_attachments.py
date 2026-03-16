@@ -83,6 +83,30 @@ def test_log_trace_uploads_attachments_in_tracking_store_mode():
     assert att.id in call_args[0][1]
 
 
+def test_trace_data_still_lands_when_attachment_upload_fails():
+    """Trace data should be persisted even if attachment upload raises."""
+    att = Attachment(content_type="image/png", content_bytes=b"img")
+    trace = _make_trace({att.id: att})
+
+    mock_client = MagicMock()
+    returned_info = _make_trace_info_mock()
+    mock_client.start_trace.return_value = returned_info
+    mock_client._upload_attachments.side_effect = Exception("S3 timeout")
+
+    exporter = _make_exporter(mock_client)
+
+    with (
+        patch("mlflow.tracing.export.mlflow_v3.try_link_prompts_to_trace"),
+        patch("mlflow.tracing.export.mlflow_v3.add_size_stats_to_trace_metadata"),
+    ):
+        # Should not raise
+        exporter._log_trace(trace, prompts=[])
+
+    # Trace data was still uploaded despite attachment failure
+    mock_client._upload_trace_data.assert_called_once_with(returned_info, trace.data)
+    mock_client._upload_attachments.assert_called_once()
+
+
 def test_log_trace_skips_upload_when_no_attachments():
     trace = _make_trace()
 
