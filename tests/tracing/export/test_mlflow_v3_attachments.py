@@ -54,6 +54,35 @@ def test_log_trace_uploads_attachments():
     assert att.id in call_args[0][1]
 
 
+def test_log_trace_uploads_attachments_in_tracking_store_mode():
+    """Attachments must be uploaded even when spans are stored in the database."""
+    att = Attachment(content_type="image/png", content_bytes=b"img")
+    trace = _make_trace({att.id: att})
+    # Override to TRACKING_STORE mode
+    trace.info.tags = {TraceTagKey.SPANS_LOCATION: SpansLocation.TRACKING_STORE.value}
+
+    mock_client = MagicMock()
+    returned_info = MagicMock()
+    returned_info.tags = {TraceTagKey.SPANS_LOCATION: SpansLocation.TRACKING_STORE.value}
+    mock_client.start_trace.return_value = returned_info
+
+    exporter = _make_exporter(mock_client)
+
+    with (
+        patch("mlflow.tracing.export.mlflow_v3.try_link_prompts_to_trace"),
+        patch("mlflow.tracing.export.mlflow_v3.add_size_stats_to_trace_metadata"),
+    ):
+        exporter._log_trace(trace, prompts=[])
+
+    # traces.json should NOT be uploaded in TRACKING_STORE mode
+    mock_client._upload_trace_data.assert_not_called()
+    # But attachments MUST still be uploaded to the artifact repo
+    mock_client._upload_attachments.assert_called_once()
+    call_args = mock_client._upload_attachments.call_args
+    assert call_args[0][0] is returned_info
+    assert att.id in call_args[0][1]
+
+
 def test_log_trace_skips_upload_when_no_attachments():
     trace = _make_trace()
 
