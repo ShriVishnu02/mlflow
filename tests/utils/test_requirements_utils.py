@@ -570,6 +570,69 @@ def test_check_requirement_satisfied_checks_matching_marker():
     assert result is not None
 
 
+def test_warn_dependency_requirement_mismatches_ignores_non_matching_markers():
+    """
+    Tests that warn_dependency_requirement_mismatches does not generate warnings for
+    requirements with environment markers that do not apply to the current environment.
+    This covers the uv-style requirements.txt where the same package may have multiple
+    entries with different markers (e.g., different versions for different Python versions
+    or platforms).
+    """
+    import numpy
+
+    numpy_version = numpy.__version__
+
+    with mock.patch("mlflow.utils.requirements_utils._logger.warning") as mock_warning:
+        # A requirement with a marker that never matches (Python < 2.0) should not generate
+        # a warning, even though the package version (999.99.99) would be a mismatch.
+        warn_dependency_requirement_mismatches(
+            model_requirements=["numpy==999.99.99 ; python_full_version < '2.0'"]
+        )
+        mock_warning.assert_not_called()
+        mock_warning.reset_mock()
+
+        # An uninstalled package with a non-matching marker should not generate a warning.
+        warn_dependency_requirement_mismatches(
+            model_requirements=["uninstalled-pkg==1.2.3 ; python_full_version < '2.0'"]
+        )
+        mock_warning.assert_not_called()
+        mock_warning.reset_mock()
+
+        # uv-style: same package with different markers for different Python versions.
+        # Only the requirement whose marker matches should be checked; if that version
+        # is installed correctly, no warning should be generated.
+        warn_dependency_requirement_mismatches(
+            model_requirements=[
+                # This marker does not match current Python (< 2.0 is always False)
+                "numpy==999.99.99 ; python_full_version < '2.0'",
+                # This marker always matches; use the actually installed version
+                f"numpy=={numpy_version} ; python_full_version >= '2.0'",
+            ]
+        )
+        mock_warning.assert_not_called()
+        mock_warning.reset_mock()
+
+    # Verify that a requirement with a matching marker still generates a warning
+    # when the version is wrong, to ensure non-matching markers truly are skipped
+    # rather than all markers being ignored.
+    with mock.patch("mlflow.utils.requirements_utils._logger.warning") as mock_warning:
+        with mock.patch(
+            "mlflow.utils.requirements_utils._get_installed_version",
+            return_value="999.99.22",
+        ):
+            warn_dependency_requirement_mismatches(
+                model_requirements=[
+                    # Non-matching marker: should be skipped regardless of version
+                    "numpy==999.99.99 ; python_full_version < '2.0'",
+                    # Matching marker with wrong version: should generate a warning
+                    f"numpy=={numpy_version} ; python_full_version >= '2.0'",
+                ]
+            )
+        mock_warning.assert_called_once_with(
+            AnyStringWith(f" - numpy (current: 999.99.22, required: numpy=={numpy_version}")
+        )
+
+
 @pytest.mark.parametrize(
     "ignore_package_name",
     [
