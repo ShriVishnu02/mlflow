@@ -10,6 +10,7 @@ import {
   XCircleIcon,
 } from '@databricks/design-system';
 import { FormattedMessage } from '@databricks/i18n';
+import { Link } from '../RoutingUtils';
 
 const BUILTIN_SCORER_ASSESSMENT_DISPLAY = {
   user_frustration: {
@@ -89,6 +90,7 @@ export const AssessmentDisplayValue = ({
   skipIcons = false,
   overrideColor,
   assessmentName,
+  issueHref,
 }: {
   jsonValue: string;
   className?: string;
@@ -96,6 +98,7 @@ export const AssessmentDisplayValue = ({
   skipIcons?: boolean;
   overrideColor?: TagColors;
   assessmentName?: string;
+  issueHref?: string;
 }) => {
   const { theme } = useDesignSystemTheme();
 
@@ -171,25 +174,46 @@ export const AssessmentDisplayValue = ({
     </>
   );
 
+  const tagElement = (
+    <Tag
+      css={{ display: 'inline-flex', maxWidth: '100%', minWidth: theme.spacing.md, marginRight: 0 }}
+      componentId="shared.model-trace-explorer.assesment-value-tag"
+      color={overrideColor ?? color}
+      className={className}
+    >
+      <span
+        css={{
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          textWrap: 'nowrap',
+        }}
+      >
+        {prefix}
+        {children}
+      </span>
+    </Tag>
+  );
+
+  const wrappedElement = issueHref ? (
+    <Link
+      componentId="shared.model-trace-explorer.issue-link"
+      to={issueHref}
+      css={{
+        '&:hover': {
+          opacity: 0.8,
+        },
+        cursor: 'pointer',
+      }}
+    >
+      {tagElement}
+    </Link>
+  ) : (
+    tagElement
+  );
+
   return (
     <Tooltip componentId="shared.model-trace-explorer.assesment-value-tooltip" content={tooltipContent}>
-      <Tag
-        css={{ display: 'inline-flex', maxWidth: '100%', minWidth: theme.spacing.md, marginRight: 0 }}
-        componentId="shared.model-trace-explorer.assesment-value-tag"
-        color={overrideColor ?? color}
-        className={className}
-      >
-        <span
-          css={{
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            textWrap: 'nowrap',
-          }}
-        >
-          {prefix}
-          {children}
-        </span>
-      </Tag>
+      {wrappedElement}
     </Tooltip>
   );
 };

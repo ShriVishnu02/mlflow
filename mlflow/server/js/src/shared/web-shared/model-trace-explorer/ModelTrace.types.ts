@@ -506,12 +506,10 @@ export interface ExpectationAssessment extends AssessmentBase {
   expectation: Expectation;
 }
 
-export interface IssueReferenceValue {
-  issue_name: string;
-}
-
 export interface IssueReferenceAssessment extends AssessmentBase {
-  issue: IssueReferenceValue;
+  issue: Feedback;
 }
 
 export type Assessment = FeedbackAssessment | ExpectationAssessment | IssueReferenceAssessment;
+
+export type FeedbackOrIssue = FeedbackAssessment | IssueReferenceAssessment;

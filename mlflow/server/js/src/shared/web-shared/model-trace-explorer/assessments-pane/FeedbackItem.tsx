@@ -5,9 +5,9 @@ import { useDesignSystemTheme } from '@databricks/design-system';
 import { AssessmentEditForm } from './AssessmentEditForm';
 import { AssessmentItemHeader } from './AssessmentItemHeader';
 import { FeedbackItemContent } from './FeedbackItemContent';
-import type { FeedbackAssessment } from '../ModelTrace.types';
+import type { FeedbackOrIssue } from '../ModelTrace.types';
 
-export const FeedbackItem = ({ feedback }: { feedback: FeedbackAssessment }) => {
+export const FeedbackItem = ({ feedback }: { feedback: FeedbackOrIssue }) => {
   const { theme } = useDesignSystemTheme();
   const [isEditing, setIsEditing] = useState(false);
 

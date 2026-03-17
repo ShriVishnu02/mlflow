@@ -16,7 +16,7 @@ import { FormattedMessage } from 'react-intl';
 import { AssessmentCreateForm } from './AssessmentCreateForm';
 import { getAssessmentDisplayName } from './AssessmentsPane.utils';
 import { FeedbackValueGroup } from './FeedbackValueGroup';
-import type { FeedbackAssessment } from '../ModelTrace.types';
+import type { FeedbackOrIssue } from '../ModelTrace.types';
 
 export const FeedbackGroup = ({
   name,
@@ -28,7 +28,7 @@ export const FeedbackGroup = ({
   onCancelLoading,
 }: {
   name: string;
-  valuesMap: { [value: string]: FeedbackAssessment[] };
+  valuesMap: { [value: string]: FeedbackOrIssue[] };
   traceId: string;
   activeSpanId?: string;
   feedbackTypeTag?: React.ReactNode;
@@ -40,7 +40,10 @@ export const FeedbackGroup = ({
   const [showCreateForm, setShowCreateForm] = useState(false);
   const hasError = Object.values(valuesMap)
     .flat()
-    .some((feedback) => !isNil(feedback.feedback.error));
+    .some((feedback) => {
+      const feedbackData = 'feedback' in feedback ? feedback.feedback : feedback.issue;
+      return !isNil(feedbackData.error);
+    });
 
   return (
     <div

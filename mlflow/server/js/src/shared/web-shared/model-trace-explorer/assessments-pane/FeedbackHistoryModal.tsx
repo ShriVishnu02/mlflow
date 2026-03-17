@@ -4,7 +4,7 @@ import { Modal } from '@databricks/design-system';
 import { FormattedMessage } from '@databricks/i18n';
 
 import { FeedbackHistoryItem } from './FeedbackHistoryItem';
-import type { Assessment, FeedbackAssessment } from '../ModelTrace.types';
+import type { Assessment, FeedbackOrIssue } from '../ModelTrace.types';
 
 // helper function to traverse the linked list of overridden
 // assessments. this function handles cycles by keeping track
@@ -31,7 +31,7 @@ export const FeedbackHistoryModal = ({
 }: {
   isModalVisible: boolean;
   setIsModalVisible: (isModalVisible: boolean) => void;
-  feedback: FeedbackAssessment;
+  feedback: FeedbackOrIssue;
 }) => {
   const assessmentHistory = useMemo(() => flattenOverrides(feedback), [feedback]);
 

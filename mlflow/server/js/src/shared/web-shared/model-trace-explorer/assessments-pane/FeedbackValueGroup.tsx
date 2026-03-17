@@ -5,20 +5,18 @@ import { Button, ChevronDownIcon, ChevronRightIcon, useDesignSystemTheme } from 
 import { AssessmentDisplayValue } from './AssessmentDisplayValue';
 import { FeedbackItem } from './FeedbackItem';
 import { FeedbackValueGroupSourceCounts } from './FeedbackValueGroupSourceCounts';
-import type { FeedbackAssessment } from '../ModelTrace.types';
+import type { FeedbackOrIssue } from '../ModelTrace.types';
 import { useModelTraceExplorerViewState } from '../ModelTraceExplorerViewStateContext';
+import { useParams } from '../RoutingUtils';
+import { MLFLOW_ASSESSMENT_SOURCE_RUN_ID } from '../constants';
+import Routes from '../../../../experiment-tracking/routes';
 
-export const FeedbackValueGroup = ({
-  jsonValue,
-  feedbacks,
-}: {
-  jsonValue: string;
-  feedbacks: FeedbackAssessment[];
-}) => {
+export const FeedbackValueGroup = ({ jsonValue, feedbacks }: { jsonValue: string; feedbacks: FeedbackOrIssue[] }) => {
   const { theme } = useDesignSystemTheme();
   const [expanded, setExpanded] = useState(false);
   const { subscribeToHighlightEvent } = useModelTraceExplorerViewState();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { experimentId } = useParams();
 
   useEffect(() => {
     const unsubscribes = feedbacks.map((f) =>
@@ -31,6 +29,16 @@ export const FeedbackValueGroup = ({
   }, [feedbacks, subscribeToHighlightEvent]);
 
   const assessmentName = feedbacks[0]?.assessment_name;
+  const isIssue = feedbacks[0] && 'issue' in feedbacks[0];
+  const sourceRunId = isIssue ? feedbacks[0]?.metadata?.[MLFLOW_ASSESSMENT_SOURCE_RUN_ID] : undefined;
+
+  const issueHref =
+    isIssue && experimentId && sourceRunId
+      ? (() => {
+          const issueId = JSON.parse(jsonValue);
+          return `${Routes.getIssueDetectionRunDetailsTabRoute(experimentId, sourceRunId, 'issues')}?selectedIssueId=${issueId}`;
+        })()
+      : undefined;
 
   return (
     <div ref={containerRef} css={{ display: 'flex', flexDirection: 'column' }}>
@@ -42,7 +50,7 @@ export const FeedbackValueGroup = ({
           icon={expanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
           onClick={() => setExpanded(!expanded)}
         />
-        <AssessmentDisplayValue jsonValue={jsonValue} assessmentName={assessmentName} />
+        <AssessmentDisplayValue jsonValue={jsonValue} assessmentName={assessmentName} issueHref={issueHref} />
         <FeedbackValueGroupSourceCounts feedbacks={feedbacks} />
       </div>
       {expanded && (

@@ -9,7 +9,7 @@ import { AssessmentDisplayValue } from './AssessmentDisplayValue';
 import { FeedbackErrorItem } from './FeedbackErrorItem';
 import { FeedbackHistoryModal } from './FeedbackHistoryModal';
 import { SpanNameDetailViewLink } from './SpanNameDetailViewLink';
-import type { FeedbackAssessment, RetrieverDocument } from '../ModelTrace.types';
+import type { FeedbackOrIssue, RetrieverDocument } from '../ModelTrace.types';
 import { getAssessmentDocumentIndex, isChunkRelevanceAssessment } from '../ModelTraceExplorer.utils';
 import { useModelTraceExplorerViewState } from '../ModelTraceExplorerViewStateContext';
 import { Link, useParams } from '../RoutingUtils';
@@ -23,13 +23,15 @@ import { isSessionLevelAssessment } from '../ModelTraceExplorer.utils';
 import { ModelTraceHeaderSessionIdTag } from '../ModelTraceHeaderSessionIdTag';
 import { formatCostUSD } from '../CostUtils';
 
-export const FeedbackItemContent = ({ feedback }: { feedback: FeedbackAssessment }) => {
+export const FeedbackItemContent = ({ feedback }: { feedback: FeedbackOrIssue }) => {
   const [isHistoryModalVisible, setIsHistoryModalVisible] = useState(false);
   const { theme } = useDesignSystemTheme();
   const { nodeMap, activeView } = useModelTraceExplorerViewState();
   const { experimentId } = useParams();
 
-  const value = feedback.feedback.value;
+  const feedbackData = 'feedback' in feedback ? feedback.feedback : feedback.issue;
+  const value = feedbackData.value;
+  const isIssue = 'issue' in feedback;
 
   const associatedSpan = feedback.span_id ? nodeMap[feedback.span_id] : null;
   // indicate if the assessment is session-level
@@ -68,7 +70,7 @@ export const FeedbackItemContent = ({ feedback }: { feedback: FeedbackAssessment
 
   return (
     <div css={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.sm, marginLeft: theme.spacing.lg }}>
-      {!isNil(feedback.feedback.error) && <FeedbackErrorItem error={feedback.feedback.error} />}
+      {!isNil(feedbackData.error) && <FeedbackErrorItem error={feedbackData.error} />}
       {showAssociatedSpan && (
         <div
           css={{
@@ -131,7 +133,7 @@ export const FeedbackItemContent = ({ feedback }: { feedback: FeedbackAssessment
           </div>
         </div>
       )}
-      {isNil(feedback.feedback.error) && (
+      {isNil(feedbackData.error) && !isIssue && (
         <div css={{ display: 'flex', flexDirection: 'column', gap: theme.spacing.xs }}>
           <Typography.Text size="sm" color="secondary">
             <FormattedMessage defaultMessage="Feedback" description="Label for the value of an feedback assessment" />

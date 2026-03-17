@@ -10,7 +10,7 @@ import {
   Typography,
   useDesignSystemTheme,
 } from '@databricks/design-system';
-import type { FeedbackAssessment } from '../ModelTrace.types';
+import type { FeedbackOrIssue } from '../ModelTrace.types';
 import { FeedbackGroup } from './FeedbackGroup';
 import { useEffect, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
@@ -24,11 +24,11 @@ import { FETCH_TRACE_INFO_QUERY_KEY } from '../ModelTraceExplorer.utils';
 import { isEvaluatingTracesInDetailsViewEnabled } from '../FeatureUtils';
 import { INTERNAL_ASSESSMENT_ISSUE_DISCOVERY_JUDGE } from '../constants';
 
-type GroupedFeedbacksByValue = { [value: string]: FeedbackAssessment[] };
+type GroupedFeedbacksByValue = { [value: string]: FeedbackOrIssue[] };
 
 type GroupedFeedbacks = [assessmentName: string, feedbacks: GroupedFeedbacksByValue][];
 
-const groupFeedbacks = (feedbacks: FeedbackAssessment[]): GroupedFeedbacks => {
+const groupFeedbacks = (feedbacks: FeedbackOrIssue[]): GroupedFeedbacks => {
   const aggregated: Record<string, GroupedFeedbacksByValue> = {};
   feedbacks.forEach((feedback) => {
     if (feedback.valid === false) {
@@ -36,8 +36,9 @@ const groupFeedbacks = (feedbacks: FeedbackAssessment[]): GroupedFeedbacks => {
     }
 
     let value = null;
-    if (feedback.feedback.value !== '') {
-      value = JSON.stringify(feedback.feedback.value);
+    const feedbackValue = 'feedback' in feedback ? feedback.feedback.value : feedback.issue.value;
+    if (feedbackValue !== '') {
+      value = JSON.stringify(feedbackValue);
     }
 
     const { assessment_name } = feedback;
@@ -132,7 +133,7 @@ export const AssessmentsPaneFeedbackSection = ({
   sessionId,
 }: {
   enableRunScorer: boolean;
-  feedbacks: FeedbackAssessment[];
+  feedbacks: FeedbackOrIssue[];
   activeSpanId?: string;
   traceId: string;
   sessionId?: string;

@@ -8,7 +8,7 @@ import { GenAIMarkdownRenderer } from '../../genai-markdown-renderer/GenAIMarkdo
 const IssueItem = ({ issue }: { issue: IssueReferenceAssessment }) => {
   const { theme } = useDesignSystemTheme();
   const [expanded, setExpanded] = useState(false);
-  const issueName = issue.issue.issue_name || issue.assessment_name;
+  const issueName = issue.assessment_name;
 
   return (
     <div

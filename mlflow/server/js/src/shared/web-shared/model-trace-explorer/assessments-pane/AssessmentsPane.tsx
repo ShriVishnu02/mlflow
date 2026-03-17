@@ -16,7 +16,6 @@ import { useModelTraceExplorerViewState } from '../ModelTraceExplorerViewStateCo
 import { useTraceCachedActions } from '../hooks/useTraceCachedActions';
 import { AssessmentsPaneExpectationsSection } from './AssessmentsPaneExpectationsSection';
 import { AssessmentsPaneFeedbackSection } from './AssessmentsPaneFeedbackSection';
-import { AssessmentsPaneIssuesSection } from './AssessmentsPaneIssuesSection';
 import { useModelTraceExplorerRunJudgesContext } from '../contexts/RunJudgesContext';
 
 export const AssessmentsPane = ({
@@ -54,22 +53,22 @@ export const AssessmentsPane = ({
   const { theme } = useDesignSystemTheme();
   const { setAssessmentsPaneExpanded } = useModelTraceExplorerViewState();
 
-  const { feedbacks, expectations, issues } = useMemo(() => {
-    const feedbacks: FeedbackAssessment[] = [];
+  const { feedbacks, expectations } = useMemo(() => {
+    const feedbacks: (FeedbackAssessment | IssueReferenceAssessment)[] = [];
     const expectations: ExpectationAssessment[] = [];
-    const issues: IssueReferenceAssessment[] = [];
 
     for (const assessment of allAssessments) {
       if ('feedback' in assessment) {
         feedbacks.push(assessment);
       } else if ('issue' in assessment) {
-        issues.push(assessment);
+        // Issues are rendered as feedback items
+        feedbacks.push(assessment);
       } else if ('expectation' in assessment) {
         expectations.push(assessment);
       }
     }
 
-    return { feedbacks, expectations, issues };
+    return { feedbacks, expectations };
   }, [allAssessments]);
 
   const runJudgeConfiguration = useModelTraceExplorerRunJudgesContext();
@@ -135,12 +134,6 @@ export const AssessmentsPane = ({
         traceId={traceId}
         sessionId={sessionId}
       />
-      {issues.length > 0 && (
-        <>
-          <Spacer size="sm" shrinks={false} />
-          <AssessmentsPaneIssuesSection issues={issues} />
-        </>
-      )}
     </div>
   );
 };

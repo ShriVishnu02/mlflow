@@ -693,8 +693,7 @@ export const SessionHeaderCell: React.FC<SessionHeaderCellProps> = ({
       tracesList.forEach((trace) => {
         trace.assessments?.forEach((assessment) => {
           if ('issue' in assessment && assessment.issue) {
-            const issueName = assessment.issue.issue_name || assessment.assessment_name;
-            issueSet.add(issueName);
+            issueSet.add(assessment.assessment_name);
           }
         });
       });

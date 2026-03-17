@@ -287,9 +287,10 @@ export const convertTraceInfoV3ToRunEvalEntry = (traceInfo: ModelTraceInfoV3): R
     } else if (isFeedbackAssessment(assessment)) {
       processFeedbackAssessment(assessment, overallAssessments, responseAssessmentsByName);
     } else if (isIssueReferenceAssessment(assessment)) {
-      const issueName = assessment.issue.issue_name || assessmentName;
-      // assessmentName is the issue_id
-      issues.push({ id: assessmentName, name: issueName });
+      // assessment_name is the issue name (human-readable, e.g., "Hallucination")
+      // issue.value is the issue_id (e.g., "iss-12345")
+      const issueId = typeof assessment.issue?.value === 'string' ? assessment.issue.value : '';
+      issues.push({ id: issueId, name: assessmentName });
     }
   });
 

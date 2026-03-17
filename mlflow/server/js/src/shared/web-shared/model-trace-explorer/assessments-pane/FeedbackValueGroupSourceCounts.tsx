@@ -10,7 +10,7 @@ import {
   UserIcon,
 } from '@databricks/design-system';
 
-import type { AssessmentSourceType, FeedbackAssessment } from '../ModelTrace.types';
+import type { AssessmentSourceType, FeedbackOrIssue } from '../ModelTrace.types';
 import { FormattedMessage } from 'react-intl';
 
 const getSourceTypeIcon = (sourceType: AssessmentSourceType) => {
@@ -51,7 +51,7 @@ const getSourceTypeTooltipContent = (sourceType: AssessmentSourceType) => {
   return null;
 };
 
-export const FeedbackValueGroupSourceCounts = ({ feedbacks }: { feedbacks: FeedbackAssessment[] }) => {
+export const FeedbackValueGroupSourceCounts = ({ feedbacks }: { feedbacks: FeedbackOrIssue[] }) => {
   const { theme } = useDesignSystemTheme();
 
   if (feedbacks.length < 1) {
