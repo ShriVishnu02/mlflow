@@ -468,7 +468,7 @@ def _get_or_init_huey_instance(instance_key: str):
         return _huey_instance_map[instance_key]
 
 
-def _launch_huey_consumer(job_name: str, ready_event: threading.Event | None = None) -> None:
+def _launch_huey_consumer(job_name: str, ready_event: threading.Event) -> None:
     _logger.debug(f"Starting huey consumer for job function {job_name}")
 
     fn_fullname = get_job_fn_fullname(job_name)
@@ -490,7 +490,7 @@ def _launch_huey_consumer(job_name: str, ready_event: threading.Event | None = N
                 job_name,
                 max_job_parallelism,
             )
-            if first and ready_event is not None:
+            if first:
                 ready_event.set()
                 first = False
             job_runner_proc.wait()
@@ -504,9 +504,7 @@ def _launch_huey_consumer(job_name: str, ready_event: threading.Event | None = N
     ).start()
 
 
-def _launch_periodic_tasks_consumer(
-    ready_event: threading.Event | None = None,
-) -> None:
+def _launch_periodic_tasks_consumer(ready_event: threading.Event) -> None:
     """
     Launch a dedicated Huey consumer for periodic tasks.
     This consumer runs scheduled tasks like the online scoring scheduler.
@@ -517,7 +515,7 @@ def _launch_periodic_tasks_consumer(
         first = True
         while True:
             job_runner_proc = _start_periodic_tasks_consumer_proc()
-            if first and ready_event is not None:
+            if first:
                 ready_event.set()
                 first = False
             job_runner_proc.wait()

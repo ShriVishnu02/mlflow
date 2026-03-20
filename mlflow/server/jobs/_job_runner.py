@@ -41,7 +41,7 @@ if __name__ == "__main__":
             _launch_huey_consumer(job_name, ready_event=event)
             ready_events.append(event)
         except Exception as e:
-            logging.warning(f"Launch Huey consumer for {job_name} jobs failed, root cause: {e!r}")
+            logger.warning(f"Launch Huey consumer for {job_name} jobs failed, root cause: {e!r}")
 
     # Launch dedicated consumer for periodic tasks
     # (periodic tasks are registered when the consumer starts up)
