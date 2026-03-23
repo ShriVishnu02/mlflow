@@ -53,6 +53,7 @@ jobs:
           | | |
           |---|---|
           | **Commit** | ${HEAD_SHA} |
+          | **Run** | ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} |
 
           > Building and deploying... This comment will be updated with the preview URL."
 
@@ -165,7 +166,8 @@ jobs:
 
       - name: Install Databricks CLI
         run: |
-          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+          # https://github.com/databricks/setup-cli/releases/tag/v0.295.0
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/2260866f83a41a2df55e1cfe7ffe038b78325bf6/install.sh | sh
           databricks --version
 
       - name: Create or update app
@@ -242,6 +244,7 @@ jobs:
           |---|---|
           | **URL** | ${APP_URL} |
           | **Commit** | $COMMIT_SHA |
+          | **Run** | ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} |
 
           > [!NOTE]
           > This preview is only accessible to core maintainers with workspace access.
@@ -279,7 +282,8 @@ jobs:
     steps:
       - name: Install Databricks CLI
         run: |
-          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+          # https://github.com/databricks/setup-cli/releases/tag/v0.295.0
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/2260866f83a41a2df55e1cfe7ffe038b78325bf6/install.sh | sh
           databricks --version
 
       - name: Delete app
